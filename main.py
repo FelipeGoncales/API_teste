@@ -2,6 +2,7 @@ from flask import Flask
 import fdb
 
 app = Flask(__name__)
+
 app.config.from_pyfile('config.py')
 
 host = app.config['DB_HOST']

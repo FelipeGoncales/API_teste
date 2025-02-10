@@ -31,8 +31,10 @@ def livros():
             'ano_publicacao': livro[3]
         })
 
-    return jsonify(mensagem='Lista de livros', livros=livros_dic)
-
+    return jsonify({
+        'success': 'Lista encontrada.',
+        'lista': livros_dic
+    }), 200
 
 @app.route('/livros', methods=['POST'])
 def mostrar_livro():
@@ -46,7 +48,7 @@ def mostrar_livro():
     cursor.execute('SELECT 1 FROM LIVROS WHERE TITULO = ?', (titulo,))
 
     if cursor.fetchone():
-        return jsonify(mensagem='Livro já cadastrado')
+        return jsonify({'error': 'Livro já cadastrado.'}), 404
 
     cursor.execute('INSERT INTO LIVROS(TITULO, AUTOR, ANO_PUBLICACAO) VALUES(?, ?, ?)', (titulo, autor, ano_publicacao))
 
@@ -54,13 +56,13 @@ def mostrar_livro():
     cursor.close()
 
     return jsonify({
-        'mensagem': 'Livro cadastrado com sucesso',
+        'success': 'Livro cadastrado com sucesso',
         'livro': {
             'titulo': titulo,
             'autor': autor,
             'ano_publicacao': ano_publicacao
         }
-    })
+    }), 200
 
 @app.route('/livros/<int:id>', methods=['PUT'])
 def editar_livro(id):
@@ -70,7 +72,7 @@ def editar_livro(id):
 
     if not cursor.fetchone():
         cursor.close()
-        return jsonify(mensagem='Livro não encontrado')
+        return jsonify({'error': 'Livro não encontrado.'}), 404
 
     data = request.get_json()
     titulo = data.get('titulo')
@@ -84,13 +86,13 @@ def editar_livro(id):
     cursor.close()
 
     return jsonify({
-        "mensagem": "Livro editado com sucesso",
+        "success": "Livro editado com sucesso",
         "livro": {
             "titulo": titulo,
             "autor": autor,
             "ano_publicacao": ano_publicacao
         }
-    })
+    }), 200
 
 @app.route('/livros/<int:id>', methods=['DELETE'])
 def apagar_livro(id):
@@ -100,7 +102,7 @@ def apagar_livro(id):
 
     if not cursor.fetchone():
         cursor.close()
-        return jsonify(mensagem='Nenhum livro não encontrado')
+        return jsonify({'error': 'Nenhum livro não encontrado.'}), 404
 
     cursor.execute('SELECT titulo, autor, ano_publicacao FROM LIVROS WHERE ID_LIVRO = ?', (id,))
     livro = cursor.fetchone()
@@ -112,10 +114,10 @@ def apagar_livro(id):
     cursor.close()
 
     return jsonify({
-        "mensagem": "Livro excluído com sucesso",
+        "success": "Livro excluído com sucesso",
         "livro": {
             "titulo": livro[0],
             "autor": livro[1],
             "ano_publicacao": livro[2]
         }
-    })
+    }), 200

@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify
 from main import app, con
+from flask_bcrypt import check_password_hash
 
 @app.route('/login', methods=['POST'])
 def login():
@@ -14,9 +15,9 @@ def login():
     usuario = cursor.fetchone()
 
     if not usuario:
-        return jsonify(mensagem='Email não encontrado.')
+        return jsonify({'error': 'Email não encontrado.'}), 404
 
-    if usuario[1] != senha:
-        return jsonify(mensagem='Senha inválida.')
+    if not check_password_hash(usuario[1], senha):
+        return jsonify({'error': 'Senha inválida.'}), 404
 
-    return jsonify(mensagem='Login realizado com sucesso!')
+    return jsonify({'success': 'Login realizado com sucesso'}), 200
