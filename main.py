@@ -9,6 +9,7 @@ host = app.config['DB_HOST']
 database = app.config['DB_NAME']
 user = app.config['DB_USER']
 password = app.config['DB_PASSWORD']
+senha_secreta = app.config['SECRET_KEY']
 
 try:
     con = fdb.connect(host=host, database=database, user=user, password=password)

@@ -1,5 +1,12 @@
 from flask import Flask, jsonify, request
-from main import app, con
+from main import app, con, senha_secreta
+import jwt
+
+def remover_bearer(token):
+    if token.startswith('Bearer '):
+        return token[len('Bearer: '):]
+    else:
+        return token
 
 @app.route('/livros', methods=['GET'])
 def livros():
@@ -38,6 +45,19 @@ def livros():
 
 @app.route('/livros', methods=['POST'])
 def mostrar_livro():
+    token = request.headers.get('Authorization')
+    if not token:
+        return jsonify({'error': 'Token de autenticação necessário'}), 401
+
+    token = remover_bearer(token)
+    try:
+        payload = jwt.decode(token, senha_secreta, algorithms='HS256')
+        id_usuario = payload['id_usuario']
+    except jwt.ExpiredSignatureError:
+        return jsonify({'error': 'Token expirado'}), 401
+    except jwt.InvalidTokenError:
+        return jsonify({'error': 'Token inválido'}), 401
+
     data = request.get_json()
     titulo = data.get('titulo')
     autor = data.get('autor')

@@ -1,7 +1,12 @@
 from flask import Flask, request, jsonify
-from main import app, con
+from main import app, con, senha_secreta
 from flask_bcrypt import check_password_hash
 import jwt
+
+def generate_token(user_id):
+    payload = {'id_usuario': user_id}
+    token = jwt.encode(payload, senha_secreta, algorithm='HS256')
+    return token
 
 @app.route('/login', methods=['POST'])
 def login():
@@ -11,14 +16,18 @@ def login():
 
     cursor = con.cursor()
 
-    cursor.execute('SELECT EMAIL, SENHA FROM USUARIOS WHERE EMAIL = ?', (email,))
+    cursor.execute('SELECT SENHA, ID_USUARIO FROM USUARIOS WHERE EMAIL = ?', (email,))
 
     usuario = cursor.fetchone()
 
     if not usuario:
         return jsonify({'error': 'Email não encontrado.'}), 404
 
-    if not check_password_hash(usuario[1], senha):
+    if not check_password_hash(usuario[0], senha):
         return jsonify({'error': 'Senha inválida.'}), 404
 
-    return jsonify({'success': 'Login realizado com sucesso'}), 200
+    token = generate_token(usuario[1])
+    return jsonify({
+        'success': 'Login realizado com sucesso',
+        'token': token
+    }), 200
