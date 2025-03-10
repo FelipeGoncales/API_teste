@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 from main import app, con
 from flask_bcrypt import check_password_hash
+import jwt
 
 @app.route('/login', methods=['POST'])
 def login():
